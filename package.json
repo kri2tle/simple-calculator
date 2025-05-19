@@ -1,0 +1,17 @@
+{
+  "name": "simple-calculator",
+  "version": "1.0.0",
+  "description": "Simple calculator app with basic operations",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "dependencies": {
+    "express": "^4.17.3",
+    "winston": "^3.6.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15"
+  }
+}

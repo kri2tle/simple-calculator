@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .calculator {
+            background-color: #f5f5f5;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .display {
+            background-color: #fff;
+            padding: 10px;
+            margin-bottom: 20px;
+            text-align: right;
+            font-size: 24px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        button {
+            padding: 15px;
+            font-size: 18px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #e0e0e0;
+        }
+        button:hover {
+            background-color: #d0d0d0;
+        }
+        .operator {
+            background-color: #f5a623;
+            color: white;
+        }
+        .equals {
+            background-color: #4caf50;
+            color: white;
+        }
+        .clear {
+            background-color: #f44336;
+            color: white;
+        }
+        .history {
+            margin-top: 20px;
+        }
+        .history-item {
+            padding: 10px;
+            margin-bottom: 5px;
+            background-color: #fff;
+            border-left: 3px solid #4caf50;
+        }
+    </style>
+</head>
+<body>
+    <h1>Simple Calculator</h1>
+    
+    <div class="calculator">
+        <div class="display" id="display">0</div>
+        
+        <div class="buttons">
+            <button onclick="clearDisplay()">C</button>
+            <button onclick="appendValue('/')" class="operator">/</button>
+            <button onclick="appendValue('*')" class="operator">*</button>
+            <button onclick="deleteLastChar()">←</button>
+            
+            <button onclick="appendValue('7')">7</button>
+            <button onclick="appendValue('8')">8</button>
+            <button onclick="appendValue('9')">9</button>
+            <button onclick="appendValue('-')" class="operator">-</button>
+            
+            <button onclick="appendValue('4')">4</button>
+            <button onclick="appendValue('5')">5</button>
+            <button onclick="appendValue('6')">6</button>
+            <button onclick="appendValue('+')" class="operator">+</button>
+            
+            <button onclick="appendValue('1')">1</button>
+            <button onclick="appendValue('2')">2</button>
+            <button onclick="appendValue('3')">3</button>
+            <button onclick="calculate()" class="equals">=</button>
+            
+            <button onclick="appendValue('0')" style="grid-column: span 2;">0</button>
+            <button onclick="appendValue('.')">.</button>
+        </div>
+    </div>
+    
+    <div class="history">
+        <h3>Calculation History</h3>
+        <div id="history-list"></div>
+    </div>
+    
+    <script>
+        let displayValue = '0';
+        const operators = ['+', '-', '*', '/'];
+        
+        function updateDisplay() {
+            document.getElementById('display').textContent = displayValue;
+        }
+        
+        function appendValue(value) {
+            // If display shows '0', replace it with the new value
+            if (displayValue === '0' && value !== '.') {
+                displayValue = value;
+            } else if (isOperator(value)) {
+                // If the last character is an operator, replace it
+                if (isOperator(displayValue[displayValue.length - 1])) {
+                    displayValue = displayValue.slice(0, -1) + value;
+                } else {
+                    displayValue += value;
+                }
+            } else {
+                displayValue += value;
+            }
+            updateDisplay();
+        }
+        
+        function isOperator(char) {
+            return operators.includes(char);
+        }
+        
+        function clearDisplay() {
+            displayValue = '0';
+            updateDisplay();
+        }
+        
+        function deleteLastChar() {
+            if (displayValue.length > 1) {
+                displayValue = displayValue.slice(0, -1);
+            } else {
+                displayValue = '0';
+            }
+            updateDisplay();
+        }
+        
+        function calculate() {
+            try {
+                // Find the operator and operands
+                let operation;
+                let index;
+                
+                for (let i = 1; i < displayValue.length; i++) {
+                    if (isOperator(displayValue[i]) && !isOperator(displayValue[i-1])) {
+                        operation = displayValue[i];
+                        index = i;
+                        break;
+                    }
+                }
+                
+                if (!operation) {
+                    return; // No operator found
+                }
+                
+                const num1 = displayValue.substring(0, index);
+                const num2 = displayValue.substring(index + 1);
+                
+                if (num2 === '') {
+                    return; // No second operand
+                }
+                
+                // Call the API for calculation
+                fetch('/api/calculate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ num1, num2, operation })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert(data.error);
+                        return;
+                    }
+                    
+                    // Add to history
+                    addToHistory(`${num1} ${operation} ${num2} = ${data.result}`);
+                    
+                    // Update display
+                    displayValue = data.result.toString();
+                    updateDisplay();
+                })
+                .catch(error => {
+                    console.error('Error calculating:', error);
+                    alert('Error performing calculation');
+                });
+            } catch (error) {
+                console.error('Error in calculate function:', error);
+                alert('Invalid expression');
+            }
+        }
+        
+        function addToHistory(text) {
+            const historyList = document.getElementById('history-list');
+            const historyItem = document.createElement('div');
+            historyItem.className = 'history-item';
+            historyItem.textContent = text;
+            historyList.prepend(historyItem);
+            
+            // Limit history to 10 items
+            if (historyList.children.length > 10) {
+                historyList.removeChild(historyList.lastChild);
+            }
+        }
+        
+        // Initialize
+        updateDisplay();
+    </script>
+</body>
+</html>
