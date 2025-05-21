@@ -8,10 +8,21 @@
     "dev": "nodemon app.js"
   },
   "dependencies": {
-    "express": "^4.17.3",
-    "winston": "^3.6.0"
+    "express": "^4.21.2",
+    "winston": "^3.17.0"
   },
   "devDependencies": {
-    "nodemon": "^2.0.15"
-  }
+    "nodemon": "^2.0.22"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kri2tle/simple-calculator.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kri2tle/simple-calculator/issues"
+  },
+  "homepage": "https://github.com/kri2tle/simple-calculator#readme"
 }

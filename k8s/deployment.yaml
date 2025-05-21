@@ -2,8 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: calculator-app
-  labels:
-    app: calculator-app
 spec:
   replicas: 2
   selector:
@@ -16,7 +14,7 @@ spec:
     spec:
       containers:
       - name: calculator-app
-        image: gcr.io/[YOUR-PROJECT-ID]/calculator-app:latest
+        image: kristle21/calculator-app:latest
         ports:
         - containerPort: 3000
         resources:
